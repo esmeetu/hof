@@ -96,23 +96,4 @@ public class HdfsFtpFileSystemView implements FileSystemView {
     public boolean isRandomAccessible() throws FtpException {
         return true;
     }
-
-    public static void main(String[] args) throws IOException {
-        DistributedFileSystem temp = new DistributedFileSystem();
-        Configuration conf = new Configuration();
-        conf.set("HADOOP_USER_NAME", hdfsUser);
-        DistributedFileSystem dfs = null;
-        try {
-            temp.initialize(new URI(hdfsUri), conf);
-            dfs = temp;
-        } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
-            LOGGER.error("FtpFileSystemView|initialize");
-        } finally {
-            if (null != dfs) {
-                dfs.close();
-            }
-        }
-    }
-
 }
