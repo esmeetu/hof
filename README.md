@@ -6,7 +6,7 @@ a ftp server over hdfs using ftpserver.
 - JDK 1.8
 
 # Build
-
+`mvn clean package`
 
 # How to use
 1. configure resources files: `server.properties` and `users.properties.`
