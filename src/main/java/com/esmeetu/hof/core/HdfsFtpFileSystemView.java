@@ -20,7 +20,7 @@ public class HdfsFtpFileSystemView implements FileSystemView {
     public static String hdfsUri = "hdfs://localhost:9000/";
     public static String hdfsUser = "hadoop";
 
-    public String current = "/";
+    public static String current = "/";
 
     public DistributedFileSystem dfs = null;
 
@@ -84,7 +84,7 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public FtpFile getHomeDirectory() throws FtpException {
-        return new HdfsFtpFile("/", this);
+        return new HdfsFtpFile(current, this);
     }
 
     @Override

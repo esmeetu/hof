@@ -24,7 +24,7 @@ public class HdfsFtpServer {
     
     public static final Logger LOGGER = LoggerFactory.getLogger(HdfsFtpServer.class);
 
-    private static FtpMode mode = FtpMode.FTPS;
+    private static FtpMode mode = FtpMode.FTP;
 
     public static void main(String[] args) {
 
@@ -66,6 +66,7 @@ public class HdfsFtpServer {
 
         HdfsFtpFileSystemView.hdfsUri = properties.getProperty("hdfsUri");
         HdfsFtpFileSystemView.hdfsUser = properties.getProperty("hdfsUser");
+        HdfsFtpFileSystemView.current = properties.getProperty("hdfsDir");
 
         ListenerFactory listenerFactory = new ListenerFactory();
         DataConnectionConfigurationFactory dccf = new DataConnectionConfigurationFactory();
