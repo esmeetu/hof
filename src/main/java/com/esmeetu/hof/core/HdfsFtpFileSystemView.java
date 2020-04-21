@@ -20,7 +20,8 @@ public class HdfsFtpFileSystemView implements FileSystemView {
     public static String hdfsUri = "hdfs://localhost:9000/";
     public static String hdfsUser = "hadoop";
 
-    public static String current = "/";
+    private String homeDir;
+    private String current = "/";
 
     public DistributedFileSystem dfs = null;
 
@@ -28,6 +29,12 @@ public class HdfsFtpFileSystemView implements FileSystemView {
         DistributedFileSystem temp = new DistributedFileSystem();
         Configuration conf = new Configuration();
         conf.set("HADOOP_USER_NAME", hdfsUser);
+        String homeDir = user.getHomeDirectory();
+        if (!homeDir.endsWith("/")) {
+            homeDir += '/';
+        }
+        this.homeDir = homeDir;
+        this.current = homeDir;
         try {
             temp.initialize(new URI(hdfsUri), conf);
             dfs = temp;
@@ -39,8 +46,9 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public void dispose() {
-        if (dfs == null)
+        if (dfs == null) {
             return;
+        }
 
         try {
             dfs.close();
@@ -50,33 +58,33 @@ public class HdfsFtpFileSystemView implements FileSystemView {
     }
 
     @Override
-    public boolean changeWorkingDirectory(String path) throws FtpException {
-        if (path.startsWith("/")) {
-            current = path;
-        } else if (path.equals("src/main")) {
-            current = current.substring(0, current.lastIndexOf("/"));
-            if (current.equals(""))
-                current = "/";
-        } else if (current.endsWith("/")) {
-            current = current + path;
+    public boolean changeWorkingDirectory(String dir) throws FtpException {
+        String path;
+        if (dir.startsWith("/")) {
+            path = dir;
+        } else if (current.length() > 1) {
+            path = current + "/" + dir;
         } else {
-            current = current + "/" + path;
+            path = homeDir + dir;
         }
-        return true;
+        HdfsFtpFile file = new HdfsFtpFile(path, this);
+        if (file.isDirectory()) {
+            current = path;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
     public FtpFile getFile(String file) throws FtpException {
-        String path = "";
-
+        String path;
         if (file.startsWith("/")) {
             path = file;
-        } else if (file.equals("./")) {
-            path = current;
-        } else if (current.equals("/")) {
-            path = current + file;
-        } else {
+        } else if (current.length() > 1) {
             path = current + "/" + file;
+        } else {
+            path = homeDir + file;
         }
 
         return new HdfsFtpFile(path, this);
@@ -84,7 +92,7 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public FtpFile getHomeDirectory() throws FtpException {
-        return new HdfsFtpFile(current, this);
+        return new HdfsFtpFile(homeDir, this);
     }
 
     @Override

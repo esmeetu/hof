@@ -66,7 +66,6 @@ public class HdfsFtpServer {
 
         HdfsFtpFileSystemView.hdfsUri = properties.getProperty("hdfsUri");
         HdfsFtpFileSystemView.hdfsUser = properties.getProperty("hdfsUser");
-        HdfsFtpFileSystemView.current = properties.getProperty("hdfsDir");
 
         ListenerFactory listenerFactory = new ListenerFactory();
         DataConnectionConfigurationFactory dccf = new DataConnectionConfigurationFactory();

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +103,15 @@ public class HdfsFtpFile implements FtpFile {
             LOGGER.error("HdfsFtpFile isFile");
         }
         return false;
+    }
+
+    private FsPermission getPermissions() {
+        try {
+            return view.dfs.getFileStatus(new Path(path)).getPermission();
+        } catch (IllegalArgumentException | IOException e) {
+            LOGGER.error("HdfsFtpFile getPermissions");
+        }
+        return null;
     }
 
     @Override
