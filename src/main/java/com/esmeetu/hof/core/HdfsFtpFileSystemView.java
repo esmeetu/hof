@@ -1,11 +1,5 @@
 package com.esmeetu.hof.core;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
 import org.apache.ftpserver.ftplet.FtpFile;
@@ -15,12 +9,20 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class HdfsFtpFileSystemView implements FileSystemView {
     
     public static final Logger LOGGER = LoggerFactory.getLogger(HdfsFtpFileSystemView.class);
 
     public static String hdfsUri = "hdfs://localhost:9000/";
     public static String hdfsUser = "hadoop";
+
+    private User user;
 
     private String homeDir;
     private String current = "/";
@@ -31,6 +33,7 @@ public class HdfsFtpFileSystemView implements FileSystemView {
         DistributedFileSystem temp = new DistributedFileSystem();
         Configuration conf = new Configuration();
         conf.set("HADOOP_USER_NAME", hdfsUser);
+        this.user = user;
         String homeDir = user.getHomeDirectory();
         if (!homeDir.endsWith("/")) {
             homeDir += '/';
@@ -43,6 +46,10 @@ public class HdfsFtpFileSystemView implements FileSystemView {
             e.printStackTrace();
             LOGGER.error("FtpFileSystemView|initialize");
         }
+    }
+
+    public User getUser() {
+        return user;
     }
 
     @Override
@@ -92,7 +99,7 @@ public class HdfsFtpFileSystemView implements FileSystemView {
     }
 
     @Override
-    public FtpFile getHomeDirectory() throws FtpException {
+    public FtpFile getHomeDirectory() {
         return new HdfsFtpFile(homeDir, this);
     }
 

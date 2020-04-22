@@ -1,11 +1,5 @@
 package com.esmeetu.hof.core;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
@@ -13,8 +7,16 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class HdfsFtpFile implements FtpFile {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HdfsFtpFile.class);
 
     public String path;
@@ -65,8 +67,12 @@ public class HdfsFtpFile implements FtpFile {
 
     @Override
     public String getOwnerName() {
-        LOGGER.info("PROCESS HdfsFtpFile getOwnerName path :" + path);
-        return null;
+        try {
+            return view.dfs.getFileStatus(new Path(path)).getOwner();
+        } catch (IllegalArgumentException | IOException e) {
+            LOGGER.error("HdfsFtpFile getOwerName");
+        }
+        return "undefined";
     }
 
     @Override
@@ -105,6 +111,7 @@ public class HdfsFtpFile implements FtpFile {
         return false;
     }
 
+    // return null?
     private FsPermission getPermissions() {
         try {
             return view.dfs.getFileStatus(new Path(path)).getPermission();
@@ -142,12 +149,12 @@ public class HdfsFtpFile implements FtpFile {
 
     @Override
     public boolean isRemovable() {
-        return true;
+        return isWritable();
     }
 
     @Override
     public boolean isWritable() {
-        return true;
+        return !"anonymous".equals(view.getUser().getName());
     }
 
     @Override
