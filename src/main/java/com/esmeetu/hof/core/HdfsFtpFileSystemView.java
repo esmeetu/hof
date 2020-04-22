@@ -12,8 +12,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class HdfsFtpFileSystemView implements FileSystemView {
     
@@ -52,6 +50,10 @@ public class HdfsFtpFileSystemView implements FileSystemView {
         return user;
     }
 
+    public String getHomeDir() {
+        return homeDir;
+    }
+
     @Override
     public void dispose() {
         if (dfs == null) {
@@ -67,17 +69,17 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public boolean changeWorkingDirectory(String dir) throws FtpException {
-        Path path;
+        String path;
         if (dir.startsWith("/")) {
-            path = Paths.get(homeDir,  dir);
+            path = dir;
         } else if (current.length() > 1) {
-            path = Paths.get(current,  dir);
+            path = current + "/" + dir;
         } else {
-            path = Paths.get(homeDir,  dir);
+            path = dir;
         }
-        HdfsFtpFile file = new HdfsFtpFile(path.toString(), this);
+        HdfsFtpFile file = new HdfsFtpFile(path, this);
         if (file.isDirectory()) {
-            current = path.toString();
+            current = path;
             return true;
         } else {
             return false;
@@ -86,21 +88,21 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public FtpFile getFile(String file) throws FtpException {
-        Path path;
+        String path;
         if (file.startsWith("/")) {
-            path = Paths.get(homeDir,  file);
+            path = file;
         } else if (current.length() > 1) {
-            path = Paths.get(current,  file);
+            path = current + "/" + file;
         } else {
-            path = Paths.get(homeDir,  file);
+            path = file;
         }
 
-        return new HdfsFtpFile(path.toString(), this);
+        return new HdfsFtpFile(path, this);
     }
 
     @Override
     public FtpFile getHomeDirectory() {
-        return new HdfsFtpFile(homeDir, this);
+        return new HdfsFtpFile("/", this);
     }
 
     @Override

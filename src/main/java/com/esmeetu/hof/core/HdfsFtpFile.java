@@ -2,6 +2,7 @@ package com.esmeetu.hof.core;
 
 import org.apache.ftpserver.ftplet.FtpFile;
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +23,11 @@ public class HdfsFtpFile implements FtpFile {
 
     public String path;
     public HdfsFtpFileSystemView view;
+    private String absolutePath;
 
     public HdfsFtpFile(String path, HdfsFtpFileSystemView view) {
-        this.path = path;
+        this.absolutePath = path;
+        this.path = Paths.get(view.getHomeDir(), path).toString();
         this.view = view;
     }
 
@@ -39,7 +43,7 @@ public class HdfsFtpFile implements FtpFile {
 
     @Override
     public String getAbsolutePath() {
-        return path;
+        return absolutePath;
     }
 
     @Override
@@ -160,7 +164,7 @@ public class HdfsFtpFile implements FtpFile {
     @Override
     public List<FtpFile> listFiles() {
         try {
-            return Arrays.stream(view.dfs.listStatus(new Path(path))).map(v -> new HdfsFtpFile(v.getPath().toString(), view)).collect(Collectors.toList());
+            return Arrays.stream(view.dfs.listStatus(new Path(path))).map(v -> new HdfsFtpFile(Paths.get(absolutePath, v.getPath().getName()).toString(), view)).collect(Collectors.toList());
         } catch (IllegalArgumentException | IOException e) {
             LOGGER.error("HdfsFtpFile listFiles");
         }
@@ -216,8 +220,9 @@ public class HdfsFtpFile implements FtpFile {
     @Override
     public OutputStream createOutputStream(long arg0) throws IOException {
         try {
-            view.dfs.createNewFile(new Path(path));
-            return view.dfs.create(new Path(path));
+            FSDataOutputStream out = view.dfs.create(new Path(path));
+//            view.dfs.setOwner(path, view.getUser().getName(), view.getUser());
+            return out;
         } catch (IOException e) {
             LOGGER.error("HdfsFtpFile createOutputStream");
         }
