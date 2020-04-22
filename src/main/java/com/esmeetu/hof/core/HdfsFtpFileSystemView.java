@@ -3,6 +3,8 @@ package com.esmeetu.hof.core;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;
@@ -34,7 +36,6 @@ public class HdfsFtpFileSystemView implements FileSystemView {
             homeDir += '/';
         }
         this.homeDir = homeDir;
-        this.current = homeDir;
         try {
             temp.initialize(new URI(hdfsUri), conf);
             dfs = temp;
@@ -59,17 +60,17 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public boolean changeWorkingDirectory(String dir) throws FtpException {
-        String path;
+        Path path;
         if (dir.startsWith("/")) {
-            path = dir;
+            path = Paths.get(homeDir,  dir);
         } else if (current.length() > 1) {
-            path = current + "/" + dir;
+            path = Paths.get(current,  dir);
         } else {
-            path = homeDir + dir;
+            path = Paths.get(homeDir,  dir);
         }
-        HdfsFtpFile file = new HdfsFtpFile(path, this);
+        HdfsFtpFile file = new HdfsFtpFile(path.toString(), this);
         if (file.isDirectory()) {
-            current = path;
+            current = path.toString();
             return true;
         } else {
             return false;
@@ -78,16 +79,16 @@ public class HdfsFtpFileSystemView implements FileSystemView {
 
     @Override
     public FtpFile getFile(String file) throws FtpException {
-        String path;
+        Path path;
         if (file.startsWith("/")) {
-            path = file;
+            path = Paths.get(homeDir,  file);
         } else if (current.length() > 1) {
-            path = current + "/" + file;
+            path = Paths.get(current,  file);
         } else {
-            path = homeDir + file;
+            path = Paths.get(homeDir,  file);
         }
 
-        return new HdfsFtpFile(path, this);
+        return new HdfsFtpFile(path.toString(), this);
     }
 
     @Override
